@@ -193,17 +193,28 @@ ButtonEventList = ['Pressed', 'Released', 'Held', 'Repeated', 'Tapped']
 
 ## End Communication Interface Definition --------------------------------------
 def Initialize():
+    global Room
+    global Audio
     TLP1.ShowPage('Index')
     TLP2.ShowPage('Index')
+    #Test
+    
     pass
 
 ## Event Definitions -----------------------------------------------------------
 ## Data Dictionaries -----------------------------------------------------------
 Room = {
-    'Mode' : '', #['Abierto', 'Cerrado']
-    'Last' : ''  #['Panel1', 'Panel2']
+    'Mode'   : '', #['Mixed', 'Separado']
+    'Last'   : ''  #['PanelA', 'PanelB']
 }
-
+Audio = {
+    'Mute_A' : '', #['On', 'Off']
+    'Mute_B' : '', #['On', 'Off']
+    'Mute_M' : '', #['On', 'Off']
+    'Vol_A'  : '',
+    'Vol_B'  : '',
+    'Vol_M'  : ''
+}
 ## Data Parsing ----------------------------------------------------------------
 ResponsePattern = re.compile('Out([0-9]{1,3}) In([0-9]{1,3}) (All|Vid|RGB|Aud)')
 ResponseString = ''
@@ -238,6 +249,11 @@ def SetStatus(input, output, mode):
     elif output == 2 and mode == 'Vid':
         GroupLCD2.SetCurrent(input-1)  #Display R
         GroupLCD2F.SetCurrent(input-1) #Display R - Master
+#--
+@event(DMP64, 'ReceiveData')
+def DMP64ReceiveDataEvent(interface, rcvstring):
+    print(rcvstring)
+    pass
 
 '''PANEL - ROOM A ...........................................................'''
 ## Index -----------------------------------------------------------------------
@@ -265,26 +281,26 @@ def MainEvents(button, state):
             print('Touch A: %s' % ('Room'))
         #--
         elif button is A_BtnVideo and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 TLP1.ShowPopup('Video')
                 A_LblMaster.SetText('Selección de Display')
                 AGroupMain.SetCurrent(A_BtnVideo)
                 print('Touch A: %s' % ('Video Master'))
                 #--
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 TLP1.ShowPopup('Display_1A')
                 A_LblMaster.SetText('Control de Video')
                 AGroupMain.SetCurrent(A_BtnVideo)
                 print('Touch A: %s' % ('Video'))
         #--
         elif button is A_BtnAudio and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 TLP1.ShowPopup('Audio')
                 A_LblMaster.SetText('Control de Audio')
                 AGroupMain.SetCurrent(A_BtnAudio)
                 A_LblAudio.SetText('Control de Audio en Sala A')
                 print('Touch A: %s' % ('Audio Master'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 TLP1.ShowPopup('Audio')
                 A_LblMaster.SetText('Control de Audio')
                 AGroupMain.SetCurrent(A_BtnAudio)
@@ -292,13 +308,13 @@ def MainEvents(button, state):
                 print('Touch A: %s' % ('Audio'))
         #--
         elif button is A_BtnStatus and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 TLP1.ShowPopup('Status_1Full')
                 A_LblMaster.SetText('Información de Dispositivos')
                 AGroupMain.SetCurrent(A_BtnStatus)
                 print('Touch A: %s' % ('Status Master'))
                 #--
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 TLP1.ShowPopup('Status_1A')
                 A_LblMaster.SetText('Información de Dispositivos')
                 AGroupMain.SetCurrent(A_BtnStatus)
@@ -306,14 +322,14 @@ def MainEvents(button, state):
         #--
         elif button is A_BtnPwrOff and state == 'Pressed':
             A_LblPowerAll.SetText('Mantener 3s para Apagar el Sistema')
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 TLP1.ShowPopup('x_PowerOff')
                 A_LblMaster.SetText('¿Apagar el Sistema?')
                 AGroupMain.SetCurrent(A_BtnPwrOff)
                 A_LblTexttAll.SetText('Esto Apagará los equipos de la Sala A')
                 print('Touch A: %s' % ('PowerOff Master'))
                 #--
-            if Room['Mode'] == 'Cerrado':
+            if Room['Mode'] == 'Separado':
                 TLP1.ShowPopup('x_PowerOff')
                 A_LblMaster.SetText('¿Apagar el Sistema?')
                 AGroupMain.SetCurrent(A_BtnPwrOff)
@@ -329,26 +345,26 @@ def MainEvents(button, state):
             print('Touch B: %s' % ('Room'))
         #--
         elif button is B_BtnVideo and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 TLP2.ShowPopup('Video')
                 B_LblMaster.SetText('Selección de Display')
                 BGroupMain.SetCurrent(B_BtnVideo)
                 print('Touch B: %s' % ('Video Master'))
                 #--
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 TLP2.ShowPopup('Display_1A')
                 B_LblMaster.SetText('Control de Video')
                 BGroupMain.SetCurrent(B_BtnVideo)
                 print('Touch B: %s' % ('Video'))
         #--
         elif button is B_BtnAudio and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 TLP2.ShowPopup('Audio')
                 B_LblMaster.SetText('Control de Audio')
                 BGroupMain.SetCurrent(B_BtnAudio)
                 B_LblAudio.SetText('Control de Audio en Sala B')
                 print('Touch B: %s' % ('Audio Master'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 TLP2.ShowPopup('Audio')
                 B_LblMaster.SetText('Control de Audio')
                 BGroupMain.SetCurrent(B_BtnAudio)
@@ -356,13 +372,13 @@ def MainEvents(button, state):
                 print('Touch B: %s' % ('Audio'))
         #--
         elif button is B_BtnStatus and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 TLP2.ShowPopup('Status_1Full')
                 B_LblMaster.SetText('Información de Dispositivos')
                 BGroupMain.SetCurrent(B_BtnStatus)
                 print('Touch B: %s' % ('Status Master'))
                 #--
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 TLP2.ShowPopup('Status_1A')
                 B_LblMaster.SetText('Información de Dispositivos')
                 BGroupMain.SetCurrent(B_BtnStatus)
@@ -370,14 +386,14 @@ def MainEvents(button, state):
         #--
         elif button is B_BtnPwrOff and state == 'Pressed':
             B_LblPowerAll.SetText('Mantener 3s para Apagar el Sistema')
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 TLP2.ShowPopup('x_PowerOff')
                 B_LblMaster.SetText('¿Apagar el Sistema?')
                 BGroupMain.SetCurrent(B_BtnPwrOff)
                 B_LblTexttAll.SetText('Esto Apagará los equipos de la Sala B')
                 print('Touch B: %s' % ('PowerOff Master'))
                 #--
-            if Room['Mode'] == 'Cerrado':
+            if Room['Mode'] == 'Separado':
                 TLP2.ShowPopup('x_PowerOff')
                 B_LblMaster.SetText('¿Apagar el Sistema?')
                 BGroupMain.SetCurrent(B_BtnPwrOff)
@@ -390,69 +406,97 @@ def RoomEvents(button, state):
     #--
     if button.Host.DeviceAlias == 'TouchPanelA':
         if button is A_BtnROpen and state == 'Pressed':
-            Room['Mode'] = 'Abierto'
-            A_LblRoom.SetText('Panel A: Abierto')
-            B_LblRoom.SetText('Panel B: Abierto')
-            A_LblRMode.SetText('Abierto')
-            B_LblRMode.SetText('Abierto')
-            A_LblRActv.SetText('Panel A')
-            B_LblRActv.SetText('Panel A')
+            Room['Mode'] = 'Mixed'
+            Room['Last'] = 'PanelA'
+            #Label Feedback - Both Panels
+            A_LblRoom.SetText('Panel A: Mixed')
+            B_LblRoom.SetText('Panel B: Mixed')
+            A_LblRMode.SetText(Room['Mode'])
+            B_LblRMode.SetText(Room['Mode'])
+            A_LblRActv.SetText(Room['Last'])
+            B_LblRActv.SetText(Room['Last'])
+            #Button Feedback - Both Panels
             AGroupRoom.SetCurrent(A_BtnROpen)
             BGroupRoom.SetCurrent(B_BtnROpen)
             AGroupMain.SetCurrent(A_BtnRoom)
             BGroupMain.SetCurrent(B_BtnRoom)
+            #AV Actions
+            DMP64.Send('2.') #Recall Preset
+            #View the same Popup - Both Panels
             TLP1.ShowPopup('Room')
-            TLP2.ShowPopup('Room')        
-            print('Touch A: %s' % ('Room Abierto'))
+            TLP2.ShowPopup('Room')
+            #Console Feedback
+            print('Touch A: %s' % ('Room Mixed'))
         #--
         elif button is A_BtnRClose and state == 'Pressed':
-            Room['Mode'] = 'Cerrado'
-            A_LblRoom.SetText('Panel A: Cerrado')
-            B_LblRoom.SetText('Panel B: Cerrado')
-            A_LblRMode.SetText('Cerrado')
-            B_LblRMode.SetText('Cerrado')
-            A_LblRActv.SetText('Panel A')
-            B_LblRActv.SetText('Panel A')
+            Room['Mode'] = 'Separado'
+            Room['Last'] = 'PanelA'
+            #Label Feedback - Both Panels
+            A_LblRoom.SetText('Panel A: Separado')
+            B_LblRoom.SetText('Panel B: Separado')
+            A_LblRMode.SetText(Room['Mode'])
+            B_LblRMode.SetText(Room['Mode'])
+            A_LblRActv.SetText(Room['Last'])
+            B_LblRActv.SetText(Room['Last'])
+            #Button Feedback - Both Panels
             AGroupRoom.SetCurrent(A_BtnRClose)
             BGroupRoom.SetCurrent(B_BtnRClose)
             AGroupMain.SetCurrent(A_BtnRoom)
             BGroupMain.SetCurrent(B_BtnRoom)
+            #AV Actions
+            DMP64.Send('1.') #Recall Preset
+            #View the same Popup - Both Panels
             TLP1.ShowPopup('Room')
-            TLP2.ShowPopup('Room')  
-            print('Touch A: %s' % ('Room Cerrado'))
+            TLP2.ShowPopup('Room')
+            #Console Feedback
+            print('Touch A: %s' % ('Room Separado'))
     #--
     elif button.Host.DeviceAlias == 'TouchPanelB':
         if button is B_BtnROpen and state == 'Pressed':
-            Room['Mode'] = 'Abierto'
-            A_LblRoom.SetText('Panel A: Abierto')
-            B_LblRoom.SetText('Panel B: Abierto')
-            A_LblRMode.SetText('Abierto')
-            B_LblRMode.SetText('Abierto')
-            A_LblRActv.SetText('Panel B')
-            B_LblRActv.SetText('Panel B')
+            Room['Mode'] = 'Mixed'
+            Room['Last'] = 'PanelB'
+            #Label Feedback - Both Panels
+            A_LblRoom.SetText('Panel A: Mixed')
+            B_LblRoom.SetText('Panel B: Mixed')
+            A_LblRMode.SetText(Room['Mode'])
+            B_LblRMode.SetText(Room['Mode'])
+            A_LblRActv.SetText(Room['Last'])
+            B_LblRActv.SetText(Room['Last'])
+            #Button Feedback - Both Panels
             AGroupRoom.SetCurrent(A_BtnROpen)
             BGroupRoom.SetCurrent(B_BtnROpen)
             AGroupMain.SetCurrent(A_BtnRoom)
             BGroupMain.SetCurrent(B_BtnRoom)
+            #AV Actions
+            DMP64.Send('2.') #Recall Preset
+            #View the same Popup - Both Panels
             TLP1.ShowPopup('Room')
-            TLP2.ShowPopup('Room')  
-            print('Touch B: %s' % ('Room Abierto'))
+            TLP2.ShowPopup('Room')
+            #Console Feedback
+            print('Touch B: %s' % ('Room Mixed'))
         #--
         elif button is B_BtnRClose and state == 'Pressed':
-            Room['Mode'] = 'Cerrado'
-            A_LblRoom.SetText('Panel A: Cerrado')
-            B_LblRoom.SetText('Panel B: Cerrado')
-            A_LblRMode.SetText('Cerrado')
-            B_LblRMode.SetText('Cerrado')
-            A_LblRActv.SetText('Panel B')
-            B_LblRActv.SetText('Panel B')
+            Room['Mode'] = 'Separado'
+            Room['Last'] = 'PanelB'
+            #Label Feedback - Both Panels
+            A_LblRoom.SetText('Panel A: Separado')
+            B_LblRoom.SetText('Panel B: Separado')
+            A_LblRMode.SetText(Room['Mode'])
+            B_LblRMode.SetText(Room['Mode'])
+            A_LblRActv.SetText(Room['Last'])
+            B_LblRActv.SetText(Room['Last'])
+            #Button Feedback - Both Panels
             AGroupRoom.SetCurrent(A_BtnRClose)
             BGroupRoom.SetCurrent(B_BtnRClose)
             AGroupMain.SetCurrent(A_BtnRoom)
             BGroupMain.SetCurrent(B_BtnRoom)
+            #AV Actions
+            DMP64.Send('1.') #Recall Preset
+            #View the same Popup - Both Panels
             TLP1.ShowPopup('Room')
-            TLP2.ShowPopup('Room')  
-            print('Touch B: %s' % ('Room Cerrado'))
+            TLP2.ShowPopup('Room')
+            #Console Feedback
+            print('Touch B: %s' % ('Room Separado'))
     pass
 ## Video -----------------------------------------------------------------------
 @event(PageVideo, ButtonEventList)
@@ -480,30 +524,34 @@ def LCDEvents(button, state):
     #--
     if button.Host.DeviceAlias == 'TouchPanelA':
         if button is A_BtnLHDMI and state == 'Pressed':
-            Matrix.Send('1*1%')
+            Matrix.Send('1*1%') #Video
+            Matrix.Send('2*1$') #Audio De-embedded
             print('Touch A: %s' % ('Display L - HDMI A'))
         elif button is A_BtnLShare and state == 'Pressed':
-            Matrix.Send('2*1%')
+            Matrix.Send('2*1%') #Video
+            Matrix.Send('2*1$') #Audio De-embedded
             print('Touch A: %s' % ('Display L - Share A'))
         elif button is A_BtnLPwrOn and state == 'Pressed':
-            LCD1.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
+            #LCD1.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
             print('Touch A: %s' % ('Display L - PowerOn'))
         elif button is A_BtnLPwrOff and state == 'Pressed':
-            LCD1.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
+            #LCD1.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
             print('Touch A: %s' % ('Display L - PowerOff'))
     #--
     elif button.Host.DeviceAlias == 'TouchPanelB':
         if button is B_BtnLHDMI and state == 'Pressed':
-            Matrix.Send('3*2%')
+            Matrix.Send('3*2%') #Video
+            Matrix.Send('3*2$') #Audio De-embedded
             print('Touch B: %s' % ('Display R - HDMI A'))
         elif button is B_BtnLShare and state == 'Pressed':
-            Matrix.Send('4*2%')
+            Matrix.Send('4*2%') #Video
+            Matrix.Send('4*2$') #Audio De-embedded
             print('Touch B: %s' % ('Display R - Share'))
         elif button is B_BtnLPwrOn and state == 'Pressed':
-            LCD2.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
+            #LCD2.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
             print('Touch B: %s' % ('Display R - PowerOn'))
         elif button is B_BtnLPwrOff and state == 'Pressed':
-            LCD2.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
+            #LCD2.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
             print('Touch B: %s' % ('Display R - PowerOff'))
     pass
 ## Display L (Master Mode) -----------------------------------------------------
@@ -512,22 +560,22 @@ def LCD1F_Events(button, state):
     #--
     if button.Host.DeviceAlias == 'TouchPanelA':
         if button is A_BtnFLHDMI1 and state == 'Pressed':
-            Matrix.Send('1*1%')
+            Matrix.Send('1*1%') #Video
             print('Touch A: %s' % ('Display L Master - HDMI A'))
         elif button is A_BtnFLShare1 and state == 'Pressed':
-            Matrix.Send('2*1%')
+            Matrix.Send('2*1%') #Video
             print('Touch A: %s' % ('Display L Master - Share A'))
         elif button is A_BtnFLHDMI2 and state == 'Pressed':
-            Matrix.Send('3*1%')
+            Matrix.Send('3*1%') #Video
             print('Touch A: %s' % ('Display L Master - HDMI B'))
         elif button is A_BtnFLShare2 and state == 'Pressed':
-            Matrix.Send('4*1%')
+            Matrix.Send('4*1%') #Video
             print('Touch A: %s' % ('Display L Master - Share B'))
         elif button is A_BtnFLPwrOn and state == 'Pressed':
-            LCD1.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
+            #LCD1.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
             print('Touch A: %s' % ('Display L Master - PowerOn'))
         elif button is A_BtnFLPwrOff and state == 'Pressed':
-            LCD1.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
+            #LCD1.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
             print('Touch A: %s' % ('Display L Master - PowerOff'))
         elif button is A_BtnFLBack and state == 'Pressed':
             TLP1.ShowPopup('Video')
@@ -535,22 +583,22 @@ def LCD1F_Events(button, state):
     #--
     elif button.Host.DeviceAlias == 'TouchPanelB':
         if button is B_BtnFLHDMI1 and state == 'Pressed':
-            Matrix.Send('1*1%')
+            Matrix.Send('1*1%') #Video
             print('Touch B: %s' % ('Display L Master - HDMI A'))
         elif button is B_BtnFLShare1 and state == 'Pressed':
-            Matrix.Send('2*1%')
+            Matrix.Send('2*1%') #Video
             print('Touch B: %s' % ('Display L Master - Share A'))
         elif button is B_BtnFLHDMI2 and state == 'Pressed':
-            Matrix.Send('3*1%')
+            Matrix.Send('3*1%') #Video
             print('Touch B: %s' % ('Display L Master - HDMI B'))
         elif button is B_BtnFLShare2 and state == 'Pressed':
-            Matrix.Send('4*1%')
+            Matrix.Send('4*1%') #Video
             print('Touch B: %s' % ('Display L Master - Share B'))
         elif button is B_BtnFLPwrOn and state == 'Pressed':
-            LCD1.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
+            #LCD1.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
             print('Touch B: %s' % ('Display L Master - PowerOn'))
         elif button is B_BtnFLPwrOff and state == 'Pressed':
-            LCD1.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
+            #LCD1.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
             print('Touch B: %s' % ('Display L Master - PowerOff'))
         elif button is B_BtnFLBack and state == 'Pressed':
             TLP2.ShowPopup('Video')
@@ -562,22 +610,22 @@ def A_LCD2Events(button, state):
     #--
     if button.Host.DeviceAlias == 'TouchPanelA':
         if button is A_BtnFRHDMI1 and state == 'Pressed':
-            Matrix.Send('1*2%')
+            Matrix.Send('1*2%') #Video
             print('Touch A: %s' % ('Display R Master - HDMI A'))
         elif button is A_BtnFRShare1 and state == 'Pressed':
-            Matrix.Send('2*2%')
+            Matrix.Send('2*2%') #Video
             print('Touch A: %s' % ('Display R Master - Share A'))
         elif button is A_BtnFRHDMI2 and state == 'Pressed':
-            Matrix.Send('3*2%')
+            Matrix.Send('3*2%') #Video
             print('Touch A: %s' % ('Display R Master - HDMI B'))
         elif button is A_BtnFRShare2 and state == 'Pressed':
-            Matrix.Send('4*2%')
+            Matrix.Send('4*2%') #Video
             print('Touch A: %s' % ('Display R Master - Share B'))
         elif button is A_BtnFRPwrOn and state == 'Pressed':
-            LCD2.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
+            #LCD2.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
             print('Touch A: %s' % ('Display R Master - PowerOn'))
         elif button is A_BtnFRPwrOff and state == 'Pressed':
-            LCD2.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
+            #LCD2.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
             print('Touch A: %s' % ('Display R Master - PowerOff'))
         elif button is A_BtnFRBack and state == 'Pressed':
             TLP1.ShowPopup('Video')
@@ -585,92 +633,124 @@ def A_LCD2Events(button, state):
     #--
     elif button.Host.DeviceAlias == 'TouchPanelB':
         if button is B_BtnFRHDMI1 and state == 'Pressed':
-            Matrix.Send('1*2%')
+            Matrix.Send('1*2%') #Video
             print('Touch B: %s' % ('Display R Master - HDMI A'))
         elif button is B_BtnFRShare1 and state == 'Pressed':
-            Matrix.Send('2*2%')
+            Matrix.Send('2*2%') #Video
             print('Touch B: %s' % ('Display R Master - Share A'))
         elif button is B_BtnFRHDMI2 and state == 'Pressed':
-            Matrix.Send('3*2%')
+            Matrix.Send('3*2%') #Video
             print('Touch B: %s' % ('Display R Master - HDMI B'))
         elif button is B_BtnFRShare2 and state == 'Pressed':
-            Matrix.Send('4*2%')
+            Matrix.Send('4*2%') #Video
             print('Touch B: %s' % ('Display R Master - Share B'))
         elif button is B_BtnFRPwrOn and state == 'Pressed':
-            LCD2.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
+            #LCD2.Send(b'\x08\x22\x00\x00\x00\x02\xD4')
             print('Touch B: %s' % ('Display R Master - PowerOn'))
         elif button is B_BtnFRPwrOff and state == 'Pressed':
-            LCD2.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
+            #LCD2.Send(b'\x08\x22\x00\x00\x00\x01\xD5')
             print('Touch B: %s' % ('Display R Master - PowerOff'))
         elif button is B_BtnFRBack and state == 'Pressed':
             TLP2.ShowPopup('Video')
             print('Touch B: %s' % ('Display R Master - Back'))
     pass
 ## Audio -----------------------------------------------------------------------
-@event(PageAudio, ButtonEventList)
+@event(PageAudio, ButtonEventList) #Programar Feedback de Mute DMP64
 def AudioEvents(button, state):
     #--
     if button.Host.DeviceAlias == 'TouchPanelA':
         if button is A_BtnVolLess and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch A: %s' % ('Audio Master Vol-'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 print('Touch A: %s' % ('Audio Vol-'))
        
         elif button is A_BtnVolLess and state == 'Repeated':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch A: %s' % ('Audio Master Vol-'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 print('Touch A: %s' % ('Audio Vol-'))
         #--
         elif button is A_BtnVolPlus and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch A: %s' % ('Audio Master Vol+'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 print('Touch A: %s' % ('Audio Vol+'))
     
         elif button is A_BtnVolPlus and state == 'Repeated':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch A: %s' % ('Audio Master Vol+'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 print('Touch A: %s' % ('Audio Vol+'))
         #--
         elif button is A_BtnMute and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
-                print('Touch A: %s' % ('Audio Master Mute'))
-            elif Room['Mode'] == 'Cerrado':
-                print('Touch A: %s' % ('Audio Mute'))
+            print('Touch A: %s' % ('Audio Mute Pressed'))
+            if Room['Mode'] == 'Mixed':
+                #--
+                if Audio['Mute_M'] == 'On':
+                    DMP64.Send('WD3*0GRPM\r') #Group Mute 3 Off
+                    print('Touch A: %s' % ('Audio Master Mute Off'))
+                    #--
+                elif Audio['Mute_M'] == 'Off':
+                    DMP64.Send('WD3*1GRPM') #Group Mute 3 On
+                    print('Touch A: %s' % ('Audio Master Mute On'))
+                #--
+            elif Room['Mode'] == 'Separado':
+                #--
+                if Audio['Mute_A'] == 'On':
+                    DMP64.Send('WD1*0GRPM\r') #Group Mute 1 Off
+                    print('Touch A: %s' % ('Audio Mute Off'))
+                    #--
+                elif Audio['Mute_A'] == 'Off':
+                    DMP64.Send('WD1*1GRPM\r') #Group Mute 1 On
+                    print('Touch A: %s' % ('Audio Mute On'))
     #--
     elif button.Host.DeviceAlias == 'TouchPanelB':
         if button is B_BtnVolLess and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch B: %s' % ('Audio Master Vol-'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 print('Touch B: %s' % ('Audio Vol-'))
        
         elif button is B_BtnVolLess and state == 'Repeated':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch B: %s' % ('Audio Master Vol-'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 print('Touch B: %s' % ('Audio Vol-'))
         #--
         elif button is B_BtnVolPlus and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch B: %s' % ('Audio Master Vol+'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 print('Touch B: %s' % ('Audio Vol+'))
     
         elif button is B_BtnVolPlus and state == 'Repeated':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch B: %s' % ('Audio Master Vol+'))
-            elif Room['Mode'] == 'Cerrado':
+            elif Room['Mode'] == 'Separado':
                 print('Touch B: %s' % ('Audio Vol+'))
         #--
         elif button is B_BtnMute and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
-                print('Touch B: %s' % ('Audio Master Mute'))
-            elif Room['Mode'] == 'Cerrado':
-                print('Touch B: %s' % ('Audio Mute'))
+            print('Touch B: %s' % ('Audio Mute Pressed'))
+            if Room['Mode'] == 'Mixed':
+                #--
+                if Audio['Mute_M'] == 'On':
+                    DMP64.Send('WD3*0GRPM\r') #Group Mute 3 Off 
+                    print('Touch B: %s' % ('Audio Master Mute Off'))
+                    #--
+                elif Audio['Mute_M'] == 'Off':
+                    DMP64.Send('WD3*1GRPM') #Group Mute 3 On
+                    print('Touch B: %s' % ('Audio Master Mute On'))
+                #--
+            elif Room['Mode'] == 'Separado':
+                #--
+                if Audio['Mute_B'] == 'On':
+                    DMP64.Send('WD2*0GRPM\r') #Group Mute 2 Off
+                    print('Touch B: %s' % ('Audio Mute Off'))
+                    #--
+                elif Audio['Mute_B'] == 'Off':
+                    DMP64.Send('WD2*1GRPM\r') #Group Mute 2 On
+                    print('Touch B: %s' % ('Audio Mute On'))
     pass
 ## Status ----------------------------------------------------------------------
 ## PowerOff --------------------------------------------------------------------
@@ -679,16 +759,16 @@ def PowerEvents(button, state):
     #--
     if button.Host.DeviceAlias == 'TouchPanelA':
         if button is A_BtnPowerAll and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch A: %s' % ('Power Master All'))
-            if Room['Mode'] == 'Cerrado':
+            if Room['Mode'] == 'Separado':
                 print('Touch A: %s' % ('Power All'))
     #--
     elif button.Host.DeviceAlias == 'TouchPanelB':
         if button is B_BtnPowerAll and state == 'Pressed':
-            if Room['Mode'] == 'Abierto':
+            if Room['Mode'] == 'Mixed':
                 print('Touch B: %s' % ('Power Master All'))
-            if Room['Mode'] == 'Cerrado':
+            if Room['Mode'] == 'Separado':
                 print('Touch B: %s' % ('Power All'))
     pass
 
